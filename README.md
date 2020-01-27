@@ -1,21 +1,24 @@
-koa-github [![Build Status](https://secure.travis-ci.org/koajs/koa-github.png)](http://travis-ci.org/koajs/koa-github)
-==========
+# [**koa-github**](https://github.com/koajs/koa-github)
 
-simple github auth middleware for koa
+> Simple github auth middleware for koa.
+
+
+[![Build Status](https://secure.travis-ci.org/koajs/koa-github.png)](http://travis-ci.org/koajs/koa-github)
 
 [![NPM](https://nodei.co/npm/koa-github.png?downloads=true)](https://nodei.co/npm/koa-github/)
+
 
 ## Example
 
 ```js
 //use http://localhost:7001 to test
 
-var koa = require('koa');
-var http = require('http');
-var session = require('koa-sess');
-var githubAuth = require('koa-github');
+const koa = require('koa');
+const http = require('http');
+const session = require('koa-generic-session');
+const githubAuth = require('koa-github');
 
-var app = koa();
+const app = new koa();
 
 app.name = 'nae-web';
 app.keys = ['key1', 'key2'];
@@ -29,7 +32,7 @@ app.use(githubAuth({
   timeout: 10000
 }));
 
-app.use(function *handler() {
+app.use(function handler() {
   if (!this.session.githubToken) {
     this.body = '<a href="/github/auth">login with github</a>';
   } else {
@@ -45,6 +48,7 @@ app.on('error', function (err) {
 
 http.createServer(app.callback()).listen(7001);
 ```
+
 
 ## Options
 
@@ -65,13 +69,7 @@ http.createServer(app.callback()).listen(7001);
 * if you set userKey field, `koa-github` will request to get the user info and set this object to `this.session[options.userKey]`, otherwise `koa-github` will not do this request.
 * if you triggle by `/github/auth?redirect_uri=/callback`, `koa-github` will redirect to `/callback` after auth, and the redirect_uri only accept start with `/`.
 
-## Licences
-(The MIT License)
 
-Copyright (c) 2013 dead-horse and other contributors
+## Licence
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+[MIT](/LICENSE)
