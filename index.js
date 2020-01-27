@@ -136,12 +136,12 @@ module.exports = function (options) {
       try {
         let result = yield urllib.request(tokenUrl, requsetOptions)
         assert.equal(result[1].statusCode, 200,
-          'response status ' + result[1].statusCode + ' not match 200')
+          `response status ${result[1].statusCode}  not match 200`)
 
         token = qsParse(result[0].toString()).access_token
         assert(token, 'response without access_token')
       } catch (err) {
-        return this.throw('request github token error: ' + err.message, 500)
+        return this.throw(`request github token error:  ${err.message}`, 500)
       }
 
       this.session[options.tokenKey] = token
@@ -155,17 +155,17 @@ module.exports = function (options) {
           let userUrl = 'https://api.github.com/user'
           let authOptions = {
             headers: {
-              Authorization: 'token ' + token,
+              Authorization: `token ${token}`,
               'user-agent': 'koa-github'
             },
             dataType: 'json'
           }
           result = yield urllib.request(userUrl, authOptions)
           assert.equal(result[1].statusCode, 200,
-            'response status ' + result[1].statusCode + ' not match 200')
+            `response status ${result[1].statusCode} not match 200`)
           assert(result[0], 'response without user info')
         } catch (err) {
-          return this.throw('request github user info error: ' + err.message, 500)
+          return this.throw(`request github user info error: ${err.message}`, 500)
         }
         debug('get user info %j and store in session.%s', result[0], options.userKey)
         this.session[options.userKey] = result[0]
