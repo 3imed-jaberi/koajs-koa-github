@@ -1,15 +1,23 @@
-coverage
-*.seed
-*.log
-*.csv
-*.dat
-*.out
-*.pid
-*.gz
+#       OS        #
+###################
+.DS_Store
+.idea
+Thumbs.db
+tmp/
+temp/
 
-pids
-logs
-results
 
-npm-debug.log
+#     Node.js     #
+###################
 node_modules
+package-lock.json
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+
+#       NYC       #
+###################
+coverage
+*.lcov
+.nyc_output
