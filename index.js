@@ -13,15 +13,16 @@
  * Module dependencies.
  */
 
-var urllib = require('co-urllib');
-var debug = require('debug')('koa-github');
-var utility = require('utility');
-var util = require('util');
-var qsParse = require('querystring').parse;
-var urlParse = require('url').parse;
-var assert = require('assert');
+const urllib = require('co-urllib');
+const debug = require('debug')('koa-github');
+const utility = require('utility');
+const util = require('util');
+const qsParse = require('querystring').parse;
+const urlParse = require('url').parse;
+const assert = require('assert');
+const convert = require('koa-convert');
 
-var defaultOptions = {
+const defaultOptions = {
   tokenKey: 'githubToken',
   signinPath: '/github/auth',
   timeout: 5000,
@@ -51,7 +52,7 @@ module.exports = function (options) {
   if (!options.clientID || !options.clientSecret || !options.callbackURL) {
     throw new Error('github auth need clientID, clientSecret and callbackURL');
   }
-  for (var key in defaultOptions) {
+  for (let key in defaultOptions) {
     if (!utility.has(options, key)) {
       options[key] = defaultOptions[key];
     }
@@ -62,15 +63,15 @@ module.exports = function (options) {
   urllib.TIMEOUT = options.timeout;
   debug('init github auth middleware with options %j', options);
 
-  return function *githubAuth(next) {
+  return convert(function *githubAuth(next) {
     if (!this.session) {
       return this.throw('github auth need session', 500);
     }
 
     // first step: redirect to github
     if (this.path === options.signinPath) {
-      var state = utility.randomString();
-      var redirectUrl = 'https://github.com/login/oauth/authorize?';
+      let state = utility.randomString();
+      let redirectUrl = 'https://github.com/login/oauth/authorize?';
       redirectUrl = util.format('%sclient_id=%s&redirect_uri=%s&scope=%s&state=%s',
         redirectUrl, options.clientID, options.callbackURL, options.scope, state);
 
@@ -78,7 +79,7 @@ module.exports = function (options) {
 
       //try to get the redirect url and set it to session
       try {
-        var redirect = decodeURIComponent(urlParse(this.url, true).query[options.redirect] || '');
+        let redirect = decodeURIComponent(urlParse(this.url, true).query[options.redirect] || '');
         if (redirect[0] === '/') {
           this.session._githubredirect = redirect;
           debug('get github callback redirect uri: %s', redirect);
@@ -105,7 +106,7 @@ module.exports = function (options) {
       }
 
       debug('after auth, jump from github.');
-      var url = urlParse(this.request.url, true);
+      let url = urlParse(this.request.url, true);
 
       // must have code
       if (!url.query.code || !url.query.state) {
@@ -122,8 +123,8 @@ module.exports = function (options) {
       }
 
       //step three: request to get the access token
-      var tokenUrl = 'https://github.com/login/oauth/access_token';
-      var requsetOptions = {
+      let tokenUrl = 'https://github.com/login/oauth/access_token';
+      let requsetOptions = {
         data: {
           client_id: options.clientID,
           client_secret: options.clientSecret,
@@ -131,9 +132,9 @@ module.exports = function (options) {
         }
       };
       debug('request the access token with data: %j', requsetOptions.data);
-      var token;
+      let token;
       try {
-        var result = yield urllib.request(tokenUrl, requsetOptions);
+        let result = yield urllib.request(tokenUrl, requsetOptions);
         assert.equal(result[1].statusCode, 200,
           'response status ' + result[1].statusCode + ' not match 200');
 
@@ -149,10 +150,10 @@ module.exports = function (options) {
 
       //step four: if set userKey, get user
       if (options.userKey) {
-        var result;
+        let result;
         try {
-          var userUrl = 'https://api.github.com/user';
-          var authOptions = {
+          let userUrl = 'https://api.github.com/user';
+          let authOptions = {
             headers: {
               Authorization: 'token ' + token,
               'user-agent': 'koa-github'
@@ -169,11 +170,11 @@ module.exports = function (options) {
         debug('get user info %j and store in session.%s', result[0], options.userKey);
         this.session[options.userKey] = result[0];
       }
-      var githubredirect = this.session._githubredirect || '/';
+      let githubredirect = this.session._githubredirect || '/';
       delete this.session._githubredirect;
       return this.redirect(githubredirect);
     }
 
     yield next;
-  };
+  });
 };
