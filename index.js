@@ -1,4 +1,4 @@
-/**!
+/** !
  * koa-github - index.js
  *
  * MIT Licensed
@@ -7,20 +7,20 @@
  *   dead_horse <dead_horse@qq.com> (http://deadhorse.me)
  */
 
-'use strict';
+'use strict'
 
 /**
  * Module dependencies.
  */
 
-const urllib = require('co-urllib');
-const debug = require('debug')('koa-github');
-const utility = require('utility');
-const util = require('util');
-const qsParse = require('querystring').parse;
-const urlParse = require('url').parse;
-const assert = require('assert');
-const convert = require('koa-convert');
+const urllib = require('co-urllib')
+const debug = require('debug')('koa-github')
+const utility = require('utility')
+const util = require('util')
+const qsParse = require('querystring').parse
+const urlParse = require('url').parse
+const assert = require('assert')
+const convert = require('koa-convert')
 
 const defaultOptions = {
   tokenKey: 'githubToken',
@@ -28,7 +28,7 @@ const defaultOptions = {
   timeout: 5000,
   scope: ['user'],
   redirect: 'redirect_uri'
-};
+}
 
 /**
  * auth with github
@@ -48,133 +48,133 @@ const defaultOptions = {
  *
  */
 module.exports = function (options) {
-  options = options || {};
+  options = options || {}
   if (!options.clientID || !options.clientSecret || !options.callbackURL) {
-    throw new Error('github auth need clientID, clientSecret and callbackURL');
+    throw new Error('github auth need clientID, clientSecret and callbackURL')
   }
   for (let key in defaultOptions) {
     if (!utility.has(options, key)) {
-      options[key] = defaultOptions[key];
+      options[key] = defaultOptions[key]
     }
   }
-  options.callbackURL = options.callbackURL;
-  options.callbackPath = urlParse(options.callbackURL).path;
+  options.callbackURL = options.callbackURL
+  options.callbackPath = urlParse(options.callbackURL).path
 
-  urllib.TIMEOUT = options.timeout;
-  debug('init github auth middleware with options %j', options);
+  urllib.TIMEOUT = options.timeout
+  debug('init github auth middleware with options %j', options)
 
-  return convert(function *githubAuth(next) {
+  return convert(function * githubAuth (next) {
     if (!this.session) {
-      return this.throw('github auth need session', 500);
+      return this.throw('github auth need session', 500)
     }
 
     // first step: redirect to github
     if (this.path === options.signinPath) {
-      let state = utility.randomString();
-      let redirectUrl = 'https://github.com/login/oauth/authorize?';
+      let state = utility.randomString()
+      let redirectUrl = 'https://github.com/login/oauth/authorize?'
       redirectUrl = util.format('%sclient_id=%s&redirect_uri=%s&scope=%s&state=%s',
-        redirectUrl, options.clientID, options.callbackURL, options.scope, state);
+        redirectUrl, options.clientID, options.callbackURL, options.scope, state)
 
-      this.session._githubstate = state;
+      this.session._githubstate = state
 
-      //try to get the redirect url and set it to session
+      // try to get the redirect url and set it to session
       try {
-        let redirect = decodeURIComponent(urlParse(this.url, true).query[options.redirect] || '');
+        let redirect = decodeURIComponent(urlParse(this.url, true).query[options.redirect] || '')
         if (redirect[0] === '/') {
-          this.session._githubredirect = redirect;
-          debug('get github callback redirect uri: %s', redirect);
+          this.session._githubredirect = redirect
+          debug('get github callback redirect uri: %s', redirect)
         }
       } catch (err) {
-        debug('decode redirect uri error');
+        debug('decode redirect uri error')
       }
-      debug('request github auth, redirect to %s', redirectUrl);
-      //if already signin
+      debug('request github auth, redirect to %s', redirectUrl)
+      // if already signin
       if (this.session[options.tokenKey]) {
-        debug('already has github token');
-        redirectUrl = this.session._githubredirect || '/';
-        delete this.session._githubredirect;
+        debug('already has github token')
+        redirectUrl = this.session._githubredirect || '/'
+        delete this.session._githubredirect
       }
-      return this.redirect(redirectUrl);
+      return this.redirect(redirectUrl)
     }
 
     // secound step: github callback
     if (this.path === options.callbackPath) {
-      //if already signin
+      // if already signin
       if (this.session[options.tokenKey]) {
-        debug('already has github token');
-        return this.redirect('/');
+        debug('already has github token')
+        return this.redirect('/')
       }
 
-      debug('after auth, jump from github.');
-      let url = urlParse(this.request.url, true);
+      debug('after auth, jump from github.')
+      let url = urlParse(this.request.url, true)
 
       // must have code
       if (!url.query.code || !url.query.state) {
-        debug('request url need `code` and `state`');
-        return this.throw(400);
+        debug('request url need `code` and `state`')
+        return this.throw(400)
       }
 
       // check the state, protect against cross-site request forgery attacks
       if (url.query.state !== this.session._githubstate) {
         debug('request state is %s, but the state in session is %s',
-          url.query.state, this.session._githubstate);
-        delete this.session._githubstate;
-        return this.throw(403);
+          url.query.state, this.session._githubstate)
+        delete this.session._githubstate
+        return this.throw(403)
       }
 
-      //step three: request to get the access token
-      let tokenUrl = 'https://github.com/login/oauth/access_token';
+      // step three: request to get the access token
+      let tokenUrl = 'https://github.com/login/oauth/access_token'
       let requsetOptions = {
         data: {
           client_id: options.clientID,
           client_secret: options.clientSecret,
           code: url.query.code
         }
-      };
-      debug('request the access token with data: %j', requsetOptions.data);
-      let token;
+      }
+      debug('request the access token with data: %j', requsetOptions.data)
+      let token
       try {
-        let result = yield urllib.request(tokenUrl, requsetOptions);
+        let result = yield urllib.request(tokenUrl, requsetOptions)
         assert.equal(result[1].statusCode, 200,
-          'response status ' + result[1].statusCode + ' not match 200');
+          'response status ' + result[1].statusCode + ' not match 200')
 
-        token = qsParse(result[0].toString()).access_token;
-        assert(token, 'response without access_token');
+        token = qsParse(result[0].toString()).access_token
+        assert(token, 'response without access_token')
       } catch (err) {
-        return this.throw('request github token error: ' + err.message, 500);
+        return this.throw('request github token error: ' + err.message, 500)
       }
 
-      this.session[options.tokenKey] = token;
-      debug('get access_token %s and store in session.%s', token, options.tokenKey);
-      delete this.session._githubstate;
+      this.session[options.tokenKey] = token
+      debug('get access_token %s and store in session.%s', token, options.tokenKey)
+      delete this.session._githubstate
 
-      //step four: if set userKey, get user
+      // step four: if set userKey, get user
       if (options.userKey) {
-        let result;
+        let result
         try {
-          let userUrl = 'https://api.github.com/user';
+          let userUrl = 'https://api.github.com/user'
           let authOptions = {
             headers: {
               Authorization: 'token ' + token,
               'user-agent': 'koa-github'
             },
             dataType: 'json'
-          };
-          result = yield urllib.request(userUrl, authOptions);
+          }
+          result = yield urllib.request(userUrl, authOptions)
           assert.equal(result[1].statusCode, 200,
-            'response status ' + result[1].statusCode + ' not match 200');
-          assert(result[0], 'response without user info');
+            'response status ' + result[1].statusCode + ' not match 200')
+          assert(result[0], 'response without user info')
         } catch (err) {
-          return this.throw('request github user info error: ' + err.message, 500);
+          return this.throw('request github user info error: ' + err.message, 500)
         }
-        debug('get user info %j and store in session.%s', result[0], options.userKey);
-        this.session[options.userKey] = result[0];
+        debug('get user info %j and store in session.%s', result[0], options.userKey)
+        this.session[options.userKey] = result[0]
       }
-      let githubredirect = this.session._githubredirect || '/';
-      delete this.session._githubredirect;
-      return this.redirect(githubredirect);
+      let githubredirect = this.session._githubredirect || '/'
+      delete this.session._githubredirect
+      return this.redirect(githubredirect)
     }
 
-    yield next;
-  });
-};
+    yield next
+  })
+}

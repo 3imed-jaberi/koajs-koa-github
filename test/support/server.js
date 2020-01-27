@@ -1,36 +1,36 @@
-//use http://localhost:7001 to test
+// use http://localhost:7001 to test
 
-const koa = require('koa');
-const http = require('http');
-const session = require('koa-generic-session');
-const githubAuth = require('../../');
+const Koa = require('koa')
+const http = require('http')
+const session = require('koa-generic-session')
+const githubAuth = require('../../')
 
-const app = new koa();
+const app = new Koa()
 
-app.name = 'nae-web';
-app.keys = ['key1', 'key2'];
+app.name = 'nae-web'
+app.keys = ['key1', 'key2']
 
-app.use(session());
+app.use(session())
 app.use(githubAuth({
   clientID: '5ec1d25d2a3baf99a03c',
   clientSecret: '513607494a244e2759738cae3d50a89494c1e7f0',
   callbackURL: 'http://localhost:7001/github/auth/callback',
   userKey: 'user',
   timeout: 10000
-}));
+}))
 
-app.use(function handler() {
+app.use(function handler () {
   if (!this.session.githubToken) {
-    this.body = '<a href="/github/auth">login with github</a>';
+    this.body = '<a href="/github/auth">login with github</a>'
   } else {
-    this.body = this.session.user;
+    this.body = this.session.user
   }
-});
+})
 
 app.on('error', function (err) {
   if (!err.status || err.status >= 500) {
-    logger.error(err);
+    logger.error(err) // eslint-disable-line
   }
-});
+})
 
-module.exports = http.createServer(app.callback());
+module.exports = http.createServer(app.callback())

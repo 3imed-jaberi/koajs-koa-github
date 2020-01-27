@@ -13,12 +13,12 @@
 ```js
 //use http://localhost:7001 to test
 
-const koa = require('koa');
+const Koa = require('koa');
 const http = require('http');
 const session = require('koa-generic-session');
 const githubAuth = require('koa-github');
 
-const app = new koa();
+const app = new Koa();
 
 app.name = 'nae-web';
 app.keys = ['key1', 'key2'];
