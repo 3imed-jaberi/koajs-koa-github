@@ -4,15 +4,15 @@
   "description": "Simple github auth middleware for koa",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --require should",
+    "contributors": "contributors",
+    "lint": "eslint --fix .",
+    "test-only": "mocha --reporter spec --require should",
+    "test": "npm run lint & npm run test-only",
     "test-cov": "nyc npm run test"
   },
-  "files": [
-    "index.js"
-  ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/dead-horse/koa-github.git"
+    "url": "git://github.com/koajs/koa-github.git"
   },
   "keywords": [
     "github",
@@ -20,8 +20,11 @@
     "koa",
     "middleware",
     "auth",
-    "login"
+    "login",
+    "github-auth"
   ],
+  "author": "dead_horse",
+  "license": "MIT",
   "nyc": {
     "reporter": [
       "lcov",
@@ -29,12 +32,6 @@
     ],
     "report-dir": "./coverage"
   },
-  "author": "dead_horse",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/dead-horse/koa-github/issues"
-  },
-  "homepage": "https://github.com/dead-horse/koa-github",
   "dependencies": {
     "co-urllib": "^0.2.3",
     "debug": "^4.1.1",
@@ -43,11 +40,24 @@
   },
   "devDependencies": {
     "contributors": "*",
+    "eslint": "^4.15.0",
+    "eslint-config-standard": "^11.0.0-beta.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
     "koa": "*",
     "koa-generic-session": "^2.0.4",
     "mocha": "^2.4.1",
     "nyc": "^15.0.0",
     "should": "2.1.1",
     "supertest": "0.8.3"
-  }
+  },
+  "engines": {
+    "node": ">= 8"
+  },
+  "bugs": {
+    "url": "https://github.com/koajs/koa-github/issues"
+  },
+  "homepage": "https://github.com/koajs/koa-github"
 }
