@@ -1,11 +1,11 @@
 //use http://localhost:7001 to test
 
-var koa = require('koa');
-var http = require('http');
-var session = require('koa-sess');
-var githubAuth = require('../../');
+const koa = require('koa');
+const http = require('http');
+const session = require('koa-generic-session');
+const githubAuth = require('../../');
 
-var app = koa();
+const app = new koa();
 
 app.name = 'nae-web';
 app.keys = ['key1', 'key2'];
@@ -19,7 +19,7 @@ app.use(githubAuth({
   timeout: 10000
 }));
 
-app.use(function *handler() {
+app.use(function handler() {
   if (!this.session.githubToken) {
     this.body = '<a href="/github/auth">login with github</a>';
   } else {

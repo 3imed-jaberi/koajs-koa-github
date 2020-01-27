@@ -13,9 +13,9 @@
  * Module dependencies.
  */
 
-var app = require('./support/server');
-var should = require('should');
-var request = require('supertest');
+const app = require('./support/server');
+const should = require('should');
+const request = require('supertest');
 
 describe('koa-github', function () {
   describe('GET /github/auth', function () {
