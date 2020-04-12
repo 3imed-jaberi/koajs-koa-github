@@ -52,12 +52,12 @@ module.exports = function (options) {
   if (!options.clientID || !options.clientSecret || !options.callbackURL) {
     throw new Error('github auth need clientID, clientSecret and callbackURL')
   }
-  for (let key in defaultOptions) {
+  for (const key in defaultOptions) {
     if (!utility.has(options, key)) {
       options[key] = defaultOptions[key]
     }
   }
-  options.callbackURL = options.callbackURL
+
   options.callbackPath = urlParse(options.callbackURL).path
 
   urllib.TIMEOUT = options.timeout
@@ -70,7 +70,7 @@ module.exports = function (options) {
 
     // first step: redirect to github
     if (this.path === options.signinPath) {
-      let state = utility.randomString()
+      const state = utility.randomString()
       let redirectUrl = 'https://github.com/login/oauth/authorize?'
       redirectUrl = util.format('%sclient_id=%s&redirect_uri=%s&scope=%s&state=%s',
         redirectUrl, options.clientID, options.callbackURL, options.scope, state)
@@ -79,7 +79,7 @@ module.exports = function (options) {
 
       // try to get the redirect url and set it to session
       try {
-        let redirect = decodeURIComponent(urlParse(this.url, true).query[options.redirect] || '')
+        const redirect = decodeURIComponent(urlParse(this.url, true).query[options.redirect] || '')
         if (redirect[0] === '/') {
           this.session._githubredirect = redirect
           debug('get github callback redirect uri: %s', redirect)
@@ -106,7 +106,7 @@ module.exports = function (options) {
       }
 
       debug('after auth, jump from github.')
-      let url = urlParse(this.request.url, true)
+      const url = urlParse(this.request.url, true)
 
       // must have code
       if (!url.query.code || !url.query.state) {
@@ -123,8 +123,8 @@ module.exports = function (options) {
       }
 
       // step three: request to get the access token
-      let tokenUrl = 'https://github.com/login/oauth/access_token'
-      let requsetOptions = {
+      const tokenUrl = 'https://github.com/login/oauth/access_token'
+      const requsetOptions = {
         data: {
           client_id: options.clientID,
           client_secret: options.clientSecret,
@@ -134,7 +134,7 @@ module.exports = function (options) {
       debug('request the access token with data: %j', requsetOptions.data)
       let token
       try {
-        let result = yield urllib.request(tokenUrl, requsetOptions)
+        const result = yield urllib.request(tokenUrl, requsetOptions)
         assert.equal(result[1].statusCode, 200,
           `response status ${result[1].statusCode}  not match 200`)
 
@@ -152,8 +152,8 @@ module.exports = function (options) {
       if (options.userKey) {
         let result
         try {
-          let userUrl = 'https://api.github.com/user'
-          let authOptions = {
+          const userUrl = 'https://api.github.com/user'
+          const authOptions = {
             headers: {
               Authorization: `token ${token}`,
               'user-agent': 'koa-github'
@@ -170,7 +170,7 @@ module.exports = function (options) {
         debug('get user info %j and store in session.%s', result[0], options.userKey)
         this.session[options.userKey] = result[0]
       }
-      let githubredirect = this.session._githubredirect || '/'
+      const githubredirect = this.session._githubredirect || '/'
       delete this.session._githubredirect
       return this.redirect(githubredirect)
     }
